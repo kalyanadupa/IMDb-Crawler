@@ -1,0 +1,195 @@
+ 
+PART A ###############################################################
+create table project( code char(4), type char(1), title varchar(50), sponser varchar(50), value integer, pi char(4), constraint prj_pk primary key (code) );
+create table faculty( ec integer, name varchar(20), dept varchar(4), dob date, constraint fac_pk primary key(ec));
+create table investigator( code char(4), ec integer, constraint inv_pk primary key(code,ec));
+create table staff( ec integer, name varchar(20), code char(4), dob date, salary integer, constraint stf_pk primary key(ec));
+
+
+INSERT INTO faculty VALUES (1001, 'BRYANT R.', 'CSE', '1975-01-28');
+INSERT INTO faculty VALUES (1002, 'GIBBONS P.', 'CSE', '1979-02-15');
+INSERT INTO faculty VALUES (1003, 'MANKOFF J.', 'MECH', '1972-02-07');
+INSERT INTO faculty VALUES (1004, 'ROHDE G.', 'ECE', '1976-12-28');
+INSERT INTO faculty VALUES (1005, 'MILLER G.', 'CSE', '1970-11-25');
+INSERT INTO faculty VALUES (1006, 'KINGSFORD C.', 'EE', '1968-05-21');
+INSERT INTO faculty VALUES (1007, 'BELLOCH G.', 'EE', '1980-03-03');
+INSERT INTO faculty VALUES (1008, 'DANENBERG R.', 'ECE', '1972-04-16');
+INSERT INTO faculty VALUES (1009, 'PAVLO A.', 'MECH', '1965-01-02');
+INSERT INTO faculty VALUES (1010, 'GARLAN D.', 'CSE', '1980-05-16');
+
+
+INSERT INTO project VALUES ('VSS1', 'S', 'VALIDATION OF CONTROL SYSTEMS', 'RLY', 2000000, 1001);
+INSERT INTO project VALUES ('SACP', 'S', 'SIDE CHANNEL ATTACKS', 'DMI',5000000,  1002);
+INSERT INTO project VALUES ('IALO', 'C', 'INDUSTRIAL AUTOMATION','BHL', 200000,  1003);
+INSERT INTO project VALUES ('OCDE', 'C', 'OPERATIONS RESEARCH','HII', 800000,  1009);
+INSERT INTO project VALUES ('BBDP', 'S', 'BLACK BODY RADIATION', 'BHL',6000000,  1007);
+INSERT INTO project VALUES ('SRC1', 'S', 'SOLID STATE DEVICES', 'HAL',8000000,  1008);
+INSERT INTO project VALUES ('LPDC', 'S', 'LOW POWER CIRCUITS', 'DMI',3000000,  1006);
+INSERT INTO project VALUES ('DCA1', 'C', 'SELF DRIVING CAR','GIL', 500000,  1003);
+INSERT INTO project VALUES ('BHSM', 'S', 'BRIDGE HEALTH MONIROTING', 'RLY', 4000000, 1004);
+
+INSERT INTO investigator VALUES ('VSS1', 1001);
+INSERT INTO investigator VALUES ('VSS1', 1002);
+INSERT INTO investigator VALUES ('SACP', 1002);
+INSERT INTO investigator VALUES ('SACP', 1010);
+INSERT INTO investigator VALUES ('IALO', 1003);
+INSERT INTO investigator VALUES ('IALO', 1007);
+INSERT INTO investigator VALUES ('OCDE', 1009);
+INSERT INTO investigator VALUES ('BBDP', 1007);
+INSERT INTO investigator VALUES ('SRC1', 1008);
+INSERT INTO investigator VALUES ('SRC1', 1001);
+INSERT INTO investigator VALUES ('LPDC', 1006);
+INSERT INTO investigator VALUES ('LPDC', 1010);
+INSERT INTO investigator VALUES ('DCA1', 1003);
+INSERT INTO investigator VALUES ('BHSM', 1004);
+INSERT INTO investigator VALUES ('BHSM', 1001);
+
+INSERT INTO staff VALUES (2001, 'ROBBIE KEANE', 'VSS1', '1990-05-16', 18000);
+INSERT INTO staff VALUES (2002, 'ANSUMAN BANERJEE', 'VSS1', '1985-05-21', 18000);
+INSERT INTO staff VALUES (2003, 'OMAR GONZALEZ', 'SACP', '1989-04-16', 20000);
+INSERT INTO staff VALUES (2004, 'ALAN GORDON', 'IALO', '1989-05-03', 20000);
+INSERT INTO staff VALUES (2005, 'ROBBIE KEANE', 'IALO', '1988-01-16', 18000);
+INSERT INTO staff VALUES (2006, 'CHANDLER HOFFMAN', 'BBDP', '1988-07-17', 22000);
+INSERT INTO staff VALUES (2007, 'PAUL POGBA', 'BHSM', '1990-08-16', 18000);
+INSERT INTO staff VALUES (2008, 'SHINJI KAGAWA', 'LPDC', '1991-01-20', 18000);
+
+
+
+PART B ####################################################################
+
+1) select code from project where type = 'C' order by value desc;
+2) select * from project where title like "%VLSI%" order by value asc;
+3) select * from faculty order by dept asc, dob desc;
+4) select * from staff where dob <= '1985-12-31' and dob >= '1980-01-01' order by name asc;
+
+
+PART C #############################################################################
+
+1) select count(*) from staff;
+2) select count(*) from faculty where dept = 'CSE' or dept = 'ECE' or dept = 'EE';
+3) select code, count(ec) from project natural left join staff group by code;
+4) select max(salary), min(salary), avg(salary) from staff where code = 'MAFV';
+5) select sponsor, max(value), min(value), avg(value) from project group by sponsor;
+6) select code from project natural left join staff group by code having count(ec) < 3;
+7) select * from project order by value desc limit 5;
+8) select * from staff where salary > (select avg(salary) from staff);
+
+
+PART D ###############################################################################
+
+1) select title from project where pi in (select ec from faculty where dept = "CSE");
+2) select name from staff where code in (select code from project where pi in (select ec from faculty where dept = "CSE"));
+3) select name from faculty where ec in ( select ec from investigator where code in (select code from project where title like "%VLSI%"));
+4) 
+select faculty.name, 
+    case 
+    when ec in (select ec from investigator where code in (select code from project where type = 'C')) and ec in (select ec from investigator where code in (select code from project where type = 'S')) then "both"
+    when ec in (select ec from investigator where code in (select code from project where type = 'S')) then "S"
+    when ec in (select ec from investigator where code in (select code from project where type = 'C')) then "C"
+    else "none"
+    end as status
+from 
+faculty; 
+5) select name from staff where code in (select code from staff where name = 'ANSUMAN BANERJEE') and name != 'ANSUMAN BANERJEE';
+
+
+PART E #################################################################################
+
+1) select name from faculty
+    where faculty.ec in (select ec from investigator where code in (select code from project where type = 'S'))
+    and 
+    ec not in (select ec from investigator where code in (select code from project where type = 'C'));
+
+2) select name from faculty
+    where faculty.ec in (select ec from investigator where code in (select code from project where type = 'S'))
+    and 
+    ec in (select ec from investigator where code in (select code from project where type = 'C'));
+
+3) select * from 
+    (select name from faculty
+    where ec in (select ec from investigator where code in (select code from project where sponsor = "RLY"))) as A
+    union 
+    (select name from staff
+    where code in (select code from project where sponsor = "RLY"))
+    ;
+
+
+PART F ##################################################################################
+
+
+1) 
+select distinct(sponsor) as sponsor 
+from project
+where sponsor not in 
+(
+select sponsor
+from (select distinct(sponsor) as sponsor from project) as all_sponsors,
+     (select distinct(dept) as dept from faculty) as all_dept
+
+where (sponsor, dept) not in (
+    select sponsor,dept from faculty natural join project natural join investigator
+     )
+     ) ;
+
+
+2) select * from project as P
+where P.pi in
+(select ec from faculty where dob = (select max(dob) from investigator natural join faculty) )
+
+3) select distinct(dept) from faculty where dept not in 
+(select distinct(dept) from faculty where ec in (select pi from project where type = 'C'));
+
+4) select dept from project,faculty where project.pi = faculty.ec group by dept
+having sum(project.value) in (
+select max(tot)  from (select dept,sum(project.value) as tot from project,faculty where project.pi = faculty.ec group by dept) as alias1
+);
+
+5) 
+select dept, name from faculty
+where ec not in 
+(select ec from faculty natural join project natural join investigator )
+group by dept, name;
+
+
+6) 
+select title,dept from 
+(
+select code,title,dept, count(ec) as depnum  from faculty natural join project natural join investigator group by title,dept
+) as T
+where depnum in 
+(
+select count(*) from faculty where dept = T.dept
+)
+;
+
+7) 
+create view dept_dob as select dept, min(dob) as dob from faculty group by dept;
+create view dept_ec as select dept, ec from dept_dob natural join faculty;
+create view dept_ec_cnt as select dept, ec,count(code) as cnt from faculty natural left join investigator group by ec;
+create view dept_mcnt as select dept,max(cnt) as mcnt from dept_ec_cnt group by dept;
+select dept from dept_ec natural join dept_ec_cnt natural join dept_mcnt where dept_ec_cnt.cnt = dept_mcnt.mcnt ;
+
+
+
+PART G #######################################################################################
+
+g) Application of Integrity constraints
+
+1) 
+a)delete from investigator where ec = 1001;
+b)delete from faculty where ec = 1001;
+c)update project set pi = null where pi = 1001;
+
+2)
+a)delete from investigator where code = 'VSS1';
+b)update staff set code = null where code = 'VSS1';
+c)delete from project where code = 'VSS1';
+
+3)
+update project set pi = 1012 where code = 'SRC1';
+
+4)
+alter table project add check (value > 100000);
+
+5)
+alter table staff add check (dob < 1997-01-20);
