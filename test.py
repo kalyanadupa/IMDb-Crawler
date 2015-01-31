@@ -14,7 +14,13 @@ from bs4 import BeautifulSoup
 
 # nextPage = hxs.xpath('//span[@class="pagination"]/a/@href')[1]
 # print nextPage
-
+def getDOB(CID)
+	doco = lxml.html.document_fromstring(requests.get("http://www.imdb.com/name/" + CID).content)
+	try:
+		dob = doco.xpath('//time[@itemprop = "birthDate"]/@datetime')[0]
+	except IndexError:
+		dob = ""	
+	return dob	
 
 def getList(address):
 	hxs = lxml.html.document_fromstring(requests.get("http://www.imdb.com"+address).content)
@@ -90,10 +96,6 @@ def getMovie(id):
 	except IndexError:
 		movie['poster'] = ""
 	
-	try:
-		movie['seeMore'] = hxs.xpath('//div[@id = "titleCast"]/div[@class="see-more"]/a/@href')
-	except IndexError:
-		movie['seeMore'] = ""
 	#Language
 	try: 
 		for i in xrange(4):
@@ -126,12 +128,11 @@ def getMovie(id):
 		coco = lxml.html.document_fromstring(requests.get("http://www.imdb.com" + id+"fullcredits").content)
 		movie['cast'] = coco.xpath('//tr[@class = "odd"]/td/a/span/text()') + coco.xpath('//tr[@class = "even"]/td/a/span/text()')
 		movie['castID'] = [i[6:15] for i in coco.xpath('//tr[@class = "odd"]/td[@class = "itemprop"]/a/@href')] + [i[6:15] for i in coco.xpath('//tr[@class = "even"]/td[@class = "itemprop"]/a/@href')]
-		for CID in movie['castID']:
-			doco = lxml.html.document_fromstring(requests.get("http://www.imdb.com/name/" + CID).content)
-			try:
-				DOB[CID] = doco.xpath('//time[@itemprop = "birthDate"]/@datetime')[0]
-			except IndexError:
-				DOB[CID] = ""
+		movie['director'] = [i[:-1] for i in coco.xpath('//table[@class = "simpleTable simpleCreditsTable"]/tbody/tr/td/a/text()')] [0]
+		movie['directorID'] = [i[6:15] for i in coco.xpath('//table[@class = "simpleTable simpleCreditsTable"]/tbody/tr/td/a/@href')] [0]
+		datLoop = coco.xpath('//div[@id= "fullcredits_content"/h4/text()')
+		# for heading in datLoop:
+			
 	except IndexError:
 		movie['cast'] = ""	
 
