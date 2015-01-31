@@ -2,25 +2,154 @@ import sys
 import requests 
 import lxml.html 
 from bs4 import BeautifulSoup
+import MySQLdb
 
 
-# respond = requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc")
-# hxs = lxml.html.document_fromstring(requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc").content)
-# #".//*[@id='content-primary']/table[3]/tbody/tr[%d]/td[2]/a/text()"
-# movie = {}
+db = MySQLdb.connect('10.5.18.67','12CS30001','dual12','12CS30001')
+cursor = db.cursor()
 
-# xyz = hxs.xpath('//td[@class="image"]/a/@href')
-# print xyz
+	
 
-# nextPage = hxs.xpath('//span[@class="pagination"]/a/@href')[1]
-# print nextPage
-def getDOB(CID)
+def createTab():
+	global db
+	global cursor
+	# cursor.execute("drop table if exists country")
+	COUNTRY = """create table country (
+		CID int(11) not null AUTO_INCREMENT,
+		name varchar(50) not null,
+		primary key (CID)
+		)"""
+	
+	cursor.execute(COUNTRY)
+
+	# cursor.execute("drop table if exists genre")
+	GENRE = """create table genre (
+		GID int(11) not null AUTO_INCREMENT,
+		name varchar(50) not null,
+		primary key (GID)
+		)"""
+	cursor.execute(GENRE)	
+
+	# cursor.execute("drop table if exists language")
+	LANGUAGE = """create table language (
+		LAID int(11) not null AUTO_INCREMENT,
+		name varchar(50) not null,
+		primary key (LAID)
+		)"""
+	cursor.execute(LANGUAGE)	
+
+	# cursor.execute("drop table if exists location")
+	LOCATION = """create table location (
+		LID int(11) not null AUTO_INCREMENT,
+		name varchar(50) not null,
+		primary key (LID)
+		)"""
+	cursor.execute(LOCATION)
+
+	# cursor.execute("drop table if exists movie")
+	MOVIE = """create table movie (
+		MID char(9) not null,
+		title varchar(100) not null,
+		year year(4) default null,
+		rating float(3,1)default null,
+		num_votes int(11) default null,
+		primary key (MID)
+		)"""
+	cursor.execute(MOVIE)	
+
+	# cursor.execute("drop table if exists person")
+	PERSON = """create table person (
+		PID char(9) not null,
+		name varchar(100) not null,
+		dob date default null,
+		primary key (PID)
+		)"""
+	cursor.execute(PERSON)		
+
+	# cursor.execute("drop table if exists m_cast")
+	MCast = """create table m_cast (
+		MID char(9) not null,
+		PID char(9) not null,
+		constraint fhg primary key (MID,PID),
+		constraint hdb foreign key (MID) references movie (MID),
+		constraint hdlkn  foreign key (PID) references person (PID)
+		)"""
+	cursor.execute(MCast)
+
+	# cursor.execute("drop table if exists m_country")
+	MCountry = """create table m_country (
+		MID char(9) not null,
+		CID char(9) not null,
+		primary key (MID,CID),
+		foreign key (MID) references movie (MID),
+		foreign key (CID) references country (CID)
+		)"""
+	cursor.execute(MCountry)
+
+	# cursor.execute("drop table if exists m_director")
+	MDirector = """create table m_director (
+		MID char(9) not null,
+		PID char(9) not null,
+		primary key (MID,PID),
+		foreign key (MID) references movie (MID),
+		foreign key (PID) references person (PID)
+		)"""
+	cursor.execute(MDirector)
+
+	# cursor.execute("drop table if exists m_genre")
+	MGenre = """create table m_director (
+		MID char(9) not null,
+		GID char(9) not null,
+		primary key (MID,GID),
+		foreign key (MID) references movie (MID),
+		foreign key (PID) references genre (GID)
+		)"""
+	cursor.execute(MGenre)
+
+	# cursor.execute("drop table if exists m_language")
+	MLanguage = """create table m_language (
+		MID char(9) not null,
+		LAID char(9) not null,
+		primary key (MID,LAID),
+		foreign key (MID) references movie (MID),
+		foreign key (LAID) references language (LAID)
+		)"""
+	cursor.execute(MLanguage)
+
+	# cursor.execute("drop table if exists m_location")
+	MLocation = """create table m_location (
+		MID char(9) not null,
+		LID char(9) not null,
+		primary key (MID,LID),
+		foreign key (MID) references movie (MID),
+		foreign key (LID) references location (LID)
+		)"""
+	cursor.execute(MLocation)	
+
+	# cursor.execute("drop table if exists m_producer")
+	MProducer = """create table m_producer (
+		MID char(9) not null,
+		PID char(9) not null,
+		primary key (MID,PID),
+		foreign key (MID) references movie (MID),
+		foreign key (PID) references person (PID)
+		)"""
+	cursor.execute(MDirector)
+	
+	
+
+def dropTab():
+	cursor.execute(DROP TABLE IF EXISTS m_director)
+	cursor.execute(DROP TABLE m_director, m_producer, m_cast, m_genre, m_country, m_language, m_location)
+	cursor.execute(DROP TABLE movie, person, genre, country, language, location)
+
+def getDOB(CID):
 	doco = lxml.html.document_fromstring(requests.get("http://www.imdb.com/name/" + CID).content)
 	try:
 		dob = doco.xpath('//time[@itemprop = "birthDate"]/@datetime')[0]
 	except IndexError:
 		dob = ""	
-	return dob	
+	return dob		
 
 def getList(address):
 	hxs = lxml.html.document_fromstring(requests.get("http://www.imdb.com"+address).content)
@@ -144,7 +273,8 @@ def getMovie(id):
 
 if __name__ == '__main__':
 	alltitles = []
-
+	createTab()
+	dropTab()
 	address = "/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc"
 	# for num in range(5):
 	# 	address, tmp = getList( address)
@@ -155,10 +285,21 @@ if __name__ == '__main__':
 	# title = "/title/tt1905041/"
 	#Baby
 	title = "/title/tt3848892/"
-	print getMovie(title)
+	# print getMovie(title)
 	# for title in alltitles:
 	# 	print getMovie(title)
 
 
 	#coco = lxml.html.document_fromstring(requests.get("http://www.imdb.com/title/tt1905041/fullcredits").content)
 	#/name/nm7061978/?ref_=ttfc_fc_cl_i
+
+	# respond = requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc")
+	# hxs = lxml.html.document_fromstring(requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc").content)
+	# #".//*[@id='content-primary']/table[3]/tbody/tr[%d]/td[2]/a/text()"
+	# movie = {}
+
+	# xyz = hxs.xpath('//td[@class="image"]/a/@href')
+	# print xyz
+
+	# nextPage = hxs.xpath('//span[@class="pagination"]/a/@href')[1]
+	# print nextPage
