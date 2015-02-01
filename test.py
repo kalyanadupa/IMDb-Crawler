@@ -491,36 +491,12 @@ if __name__ == '__main__':
     # dropTab()
     # createTab()
     address = "/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc"
-    # for num in range(5):
-    #     address, tmp = getList( address)
-    #     alltitles += tmp
-    
-    # print alltitles
-    #FnF
-    # title = "/title/tt1905041/"
-    #Baby
-    # title = "/title/tt3848892/"
-    # movie = getMovie(title)
-    # print movie
-    # insertValues(movie)
-    title = "/title/tt3848892/"
-    movie = getMovie(title)
-    print movie
-    insertValues(movie)
-    # for title in alltitles:
-        # print getMovie(title)
+    for num in range(5):
+        address, tmp = getList( address)
+        alltitles += tmp
+    for title in alltitles:
+        movie = getMovie(title)
+        print movie
+        insertValues(movie)
 
 
-    #coco = lxml.html.document_fromstring(requests.get("http://www.imdb.com/title/tt1905041/fullcredits").content)
-    #/name/nm7061978/?ref_=ttfc_fc_cl_i
-
-    # respond = requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc")
-    # hxs = lxml.html.document_fromstring(requests.get("http://www.imdb.com/search/title?languages=hi|1&title_type=feature&num_votes=50,&sort=user_rating,desc").content)
-    # #".//*[@id='content-primary']/table[3]/tbody/tr[%d]/td[2]/a/text()"
-    # movie = {}
-
-    # xyz = hxs.xpath('//td[@class="image"]/a/@href')
-    # print xyz
-
-    # nextPage = hxs.xpath('//span[@class="pagination"]/a/@href')[1]
-    # print nextPage
