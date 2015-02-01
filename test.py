@@ -1,7 +1,7 @@
 import sys 
 import requests 
 import lxml.html 
-from bs4 import BeautifulSoup
+from datetime import date, datetime
 import MySQLdb
 
 
@@ -364,6 +364,44 @@ def insertValues(movie):
 	# 	cursor.execute('insert into person values  ("{0}","{1}","{2}")'.\
 	#  		format( eachCast, getName(eachCast),getDOB(eachCast)))
 	
+	castL = movie['cast']
+	castIDL = movie['castID']
+	x = len(castL)
+
+	for i in range(0,x):
+		cName = castL.pop()
+		cID = castIDL.pop()
+		cDob = getDOB(cID)
+		print type(cName)
+		print type(cID)
+		print type(cDob)
+		print "Inserting " + cName + " " + cID   
+		if cName in personL:
+			cursor.execute('insert into m_cast values ("{0}","{1}")'.\
+				format( movie['titleID'],cID ))
+			db.commit()
+		else:
+			
+			# if type(cDob) is datetime.date:
+			personL.append(cName)
+			cursor.execute('insert into person values  ("{0}","{1}","{2}")'.\
+			 		format( cID, cName,cDob))	
+			db.commit()
+			cursor.execute('insert into m_cast values ("{0}","{1}")'.\
+				format( movie['titleID'],cID ))
+			db.commit()
+			# else:
+			# 	dummyDob = ""
+			# 	personL.append(cName)
+			# 	cursor.execute('insert into person values  ("{0}","{1}","{2}")'.\
+			# 	 		format( cID, cName,dummyDob))	
+			# 	db.commit()
+			# 	cursor.execute('insert into m_cast values ("{0}","{1}")'.\
+			# 		format( movie['titleID'],cID ))
+			# 	db.commit()		
+
+
+
 	if movie['director'] in personL:
 		cursor.execute('insert into m_director values ("{0}","{1}")'.\
 			format( movie['titleID'],movie['directorID'] ))
@@ -470,12 +508,12 @@ if __name__ == '__main__':
 	
 	# print alltitles
 	#FnF
-	title = "/title/tt1905041/"
+	# title = "/title/tt1905041/"
 	#Baby
 	# title = "/title/tt3848892/"
-	movie = getMovie(title)
-	print movie
-	insertValues(movie)
+	# movie = getMovie(title)
+	# print movie
+	# insertValues(movie)
 	title = "/title/tt3848892/"
 	movie = getMovie(title)
 	print movie
